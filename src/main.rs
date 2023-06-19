@@ -1,14 +1,9 @@
-# progress-rs
-Small rust utility for creating terminal progressbars that fit the screen.
+mod progress;
 
-# Usage
+use progress::{ProgressBar};
 
-Copy the progress.rs to the project directory where you want to use it. You will need the termsize library.
-
-```rust
-// Example:
 fn main() {
-    let mut progress_bar = ProgressBar::new(true, "[".to_string(), "]".to_string(), "#".to_string(), "~".to_string(), 0.0, 0.0, 100.0);
+    let mut progress_bar = ProgressBar::new("[".to_string(), "]".to_string(), "#".to_string(), "~".to_string(), 0.0, 0.0, 100.0);
     loop {
         match progress_bar.show() {
             Ok(boolean_finished) => {
@@ -22,5 +17,3 @@ fn main() {
         }
     }
 }
-
-```
