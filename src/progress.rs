@@ -77,7 +77,7 @@ impl ProgressBar {
         }
         print!("{}{}", outstr, overwrite);
         stdout.flush().unwrap();
-        thread::sleep(Duration::from_millis(200));
+        thread::sleep(Duration::from_millis(20));
         if self.hasfinished() {
             return Ok(true);
         } else {
