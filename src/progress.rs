@@ -1,19 +1,16 @@
 use termsize;
-use std::{thread, time};
 use std::io::{Write, stdout};
-use std::time::Duration;
 
 const BACKSPACE: char = 8u8 as char;
 
 pub struct Progress {
-    current_value: f64,
-    max_value: f64,
-    min_value: f64,
+    pub current_value: f64,
+    pub max_value: f64,
 }
 
 impl Progress {
-    pub fn new(current_value: f64, max_value: f64, min_value: f64) -> Progress {
-        return Progress { current_value: current_value, max_value: max_value, min_value: min_value };
+    pub fn new(current_value: f64, max_value: f64) -> Progress {
+        return Progress { current_value: current_value, max_value: max_value };
     }
     
     pub fn get_progress_percent(&self) -> f64 {
@@ -30,16 +27,16 @@ impl Progress {
 }
 
 pub struct ProgressBar {
-    prefix: String,
-    suffix: String,
+    pub prefix: String,
+    pub suffix: String,
     progress: String,
     progress_left: String,
-    progress_obj: Progress,
+    pub progress_obj: Progress,
 }
 
 impl ProgressBar {
-    pub fn new(prefix: String, suffix: String, progress: String, progress_left: String, current_value: f64, min_value: f64, max_value: f64) -> ProgressBar {
-        return ProgressBar {prefix: prefix, suffix: suffix, progress: progress, progress_left: progress_left, progress_obj: Progress::new(current_value, max_value, min_value) };
+    pub fn new(prefix: String, suffix: String, progress: String, progress_left: String, current_value: f64, max_value: f64) -> ProgressBar {
+        return ProgressBar {prefix: prefix, suffix: suffix, progress: progress, progress_left: progress_left, progress_obj: Progress::new(current_value, max_value) };
     }
 
     pub fn percent(&self) -> f64 {
@@ -49,7 +46,7 @@ impl ProgressBar {
     pub fn update_progress(&mut self, current_progress: f64) {
         self.progress_obj.set_progress(&current_progress);
     }
-
+    #[allow(dead_code)]
     pub fn get_progress_obj(&mut self) -> &mut Progress {
         return &mut self.progress_obj;
     }
@@ -58,26 +55,27 @@ impl ProgressBar {
         let mut stdout = stdout();
         let cols: u64 = termsize::get().unwrap().cols as u64;
         let percentage: f64 = 0.3 as f64;
-        let cols_to_draw = ((cols as f64) - ((cols as f64 * percentage) as f64)).floor();
+        let cols_to_draw = ((cols as f64) - ((cols as f64 * percentage) as f64)).ceil();
 
         let cols_progress = (cols_to_draw as usize - self.prefix.len()) - self.suffix.len();
         let mut progress_str = String::new();
-        let mut cols_false = cols_progress as f64 - (cols_progress as f64 * (self.percent() / 100.0)).floor();
-        for i in 0..(cols_progress as f64 * (self.percent() / 100.0)).floor() as i64 {
+        let cols_false = cols_progress as f64 - (cols_progress as f64 * (self.percent() / 100.0)).floor();
+        for _i in 0..(cols_progress as f64 * (self.percent() / 100.0)).floor() as i64 {
             progress_str += self.progress.as_str();
         }
-        for i in 0..cols_false.floor() as i64 {
-            progress_str += self.progress_left.as_str();
+        if !self.hasfinished(){
+            for _i in 0..cols_false.floor() as i64 {
+                progress_str += self.progress_left.as_str();
+            }
         }
-        let outstr = format!("{}\r{}{}{} {:3.0}%", BACKSPACE, self.prefix, progress_str, self.suffix, self.percent());
+        let outstr = format!("{}\r{}{}{} {:3.2}%", BACKSPACE, self.prefix, progress_str, self.suffix, self.percent());
         let remaining_cols = cols - outstr.len() as u64;
         let mut overwrite = String::new();
-        for i in 0..(remaining_cols / 2) as u64 {
+        for _i in 0..(remaining_cols / 2) as u64 {
             overwrite += " ";
         }
         print!("{}{}", outstr, overwrite);
         stdout.flush().unwrap();
-        thread::sleep(Duration::from_millis(20));
         if self.hasfinished() {
             return Ok(true);
         } else {
